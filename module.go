@@ -29,7 +29,9 @@ func init() {
 }
 
 type Config struct {
-	Servo string `json:"servo`
+	Servo   string `json:"servo`
+	Repeat  int    `json:"repeat"`
+	DelayMS int    `json:"delay_ms"`
 }
 
 // Validate ensures all parts of the config are valid and important fields exist.
@@ -43,6 +45,12 @@ type Config struct {
 // (for example, "components.0"). You can use it in error messages
 // to indicate which resource has a problem.
 func (cfg *Config) Validate(path string) ([]string, []string, error) {
+	if cfg.DelayMS < 1 {
+		return nil, nil, errors.New("Delay must be positive")
+	}
+	if cfg.Repeat < 1 {
+		return nil, nil, errors.New("Repeat must be positive")
+	}
 	return []string{cfg.Servo}, nil, nil
 }
 
@@ -89,7 +97,7 @@ func (s *servoWiggleServo) Name() resource.Name {
 }
 
 func (s *servoWiggleServo) DoCommand(ctx context.Context, cmd map[string]interface{}) (map[string]interface{}, error) {
-	const delay = 250 * time.Millisecond
+	delay := time.Duration(s.cfg.DelayMS) * time.Millisecond
 
 	for range 3 {
 		s.upstream.Move(ctx, 105, nil)
