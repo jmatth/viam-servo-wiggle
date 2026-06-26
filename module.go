@@ -29,9 +29,11 @@ func init() {
 }
 
 type Config struct {
-	Servo   string `json:"servo`
-	Repeat  int    `json:"repeat"`
-	DelayMS int    `json:"delay_ms"`
+	Servo      string `json:"servo"`
+	Repeat     int    `json:"repeat"`
+	DelayMS    int    `json:"delay_ms"`
+	StartAngle uint32 `json:"start_angle"`
+	EndAngle   uint32 `json:"end_angle"`
 }
 
 // Validate ensures all parts of the config are valid and important fields exist.
@@ -45,6 +47,12 @@ type Config struct {
 // (for example, "components.0"). You can use it in error messages
 // to indicate which resource has a problem.
 func (cfg *Config) Validate(path string) ([]string, []string, error) {
+	if cfg.StartAngle < 0 || cfg.StartAngle > 360 {
+		return nil, nil, errors.New("Start angle must be between 0 and 360")
+	}
+	if cfg.EndAngle < 0 || cfg.EndAngle > 360 {
+		return nil, nil, errors.New("Start angle must be between 0 and 360")
+	}
 	if cfg.DelayMS < 1 {
 		return nil, nil, errors.New("Delay must be positive")
 	}
@@ -98,11 +106,13 @@ func (s *servoWiggleServo) Name() resource.Name {
 
 func (s *servoWiggleServo) DoCommand(ctx context.Context, cmd map[string]interface{}) (map[string]interface{}, error) {
 	delay := time.Duration(s.cfg.DelayMS) * time.Millisecond
+	start := s.cfg.StartAngle
+	end := s.cfg.EndAngle
 
 	for range s.cfg.Repeat {
-		s.upstream.Move(ctx, 105, nil)
+		s.upstream.Move(ctx, start, nil)
 		time.Sleep(delay)
-		s.upstream.Move(ctx, 180, nil)
+		s.upstream.Move(ctx, end, nil)
 		time.Sleep(delay)
 	}
 	s.upstream.Move(ctx, 105, nil)
