@@ -4,8 +4,12 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"time"
+
+	"github.com/samber/mo"
 
 	generic "go.viam.com/rdk/components/generic"
+	"go.viam.com/rdk/components/servo"
 	"go.viam.com/rdk/logging"
 	"go.viam.com/rdk/resource"
 	"go.viam.com/rdk/spatialmath"
@@ -25,20 +29,7 @@ func init() {
 }
 
 type Config struct {
-	/*
-		Put config attributes here. There should be public/exported fields
-		with a `json` parameter at the end of each attribute.
-
-		Example config struct:
-			type Config struct {
-				Pin   string `json:"pin"`
-				Board string `json:"board"`
-				MinDeg *float64 `json:"min_angle_deg,omitempty"`
-			}
-
-		If your model does not need a config, replace *Config in the init
-		function with resource.NoNativeConfig
-	*/
+	Servo string `json:"servo`
 }
 
 // Validate ensures all parts of the config are valid and important fields exist.
@@ -52,8 +43,7 @@ type Config struct {
 // (for example, "components.0"). You can use it in error messages
 // to indicate which resource has a problem.
 func (cfg *Config) Validate(path string) ([]string, []string, error) {
-	// Add config validation code here
-	return nil, nil, nil
+	return []string{cfg.Servo}, nil, nil
 }
 
 type servoWiggleServo struct {
@@ -67,6 +57,8 @@ type servoWiggleServo struct {
 
 	cancelCtx  context.Context
 	cancelFunc func()
+
+	upstream servo.Servo
 }
 
 func newServoWiggleServo(ctx context.Context, deps resource.Dependencies, rawConf resource.Config, logger logging.Logger) (resource.Resource, error) {
@@ -87,6 +79,7 @@ func NewServo(ctx context.Context, deps resource.Dependencies, name resource.Nam
 		cfg:        conf,
 		cancelCtx:  cancelCtx,
 		cancelFunc: cancelFunc,
+		upstream:   mo.TupleToResult(servo.FromProvider(deps, conf.Servo)).MustGet(),
 	}
 	return s, nil
 }
@@ -96,7 +89,16 @@ func (s *servoWiggleServo) Name() resource.Name {
 }
 
 func (s *servoWiggleServo) DoCommand(ctx context.Context, cmd map[string]interface{}) (map[string]interface{}, error) {
-	return nil, fmt.Errorf("not implemented")
+	const delay = 250 * time.Millisecond
+
+	for range 3 {
+		s.upstream.Move(ctx, 105, nil)
+		time.Sleep(delay)
+		s.upstream.Move(ctx, 180, nil)
+		time.Sleep(delay)
+	}
+	s.upstream.Move(ctx, 105, nil)
+	return nil, nil
 }
 
 func (s *servoWiggleServo) Status(ctx context.Context) (map[string]interface{}, error) {
