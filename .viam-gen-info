@@ -1,0 +1,13 @@
+{
+  "module_name": "servo-wiggle",
+  "visibility": "public_unlisted",
+  "namespace": "jmatthviam",
+  "language": "go",
+  "resource_type": "component",
+  "resource_subtype": "generic",
+  "model_name": "servo",
+  "initialize_git": false,
+  "generator_version": "0.1.0",
+  "generated_on": "2026-06-26T18:02:21.975666188Z",
+  "module_readme_link": "README.md"
+}
