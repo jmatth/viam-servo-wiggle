@@ -2,7 +2,7 @@
   "$schema": "https://dl.viam.dev/module.schema.json",
   "module_id": "jmatthviam:servo-wiggle",
   "visibility": "public_unlisted",
-  "url": "",
+  "url": "https://github.com/jmatth/viam-servo-wiggle",
   "description": "Modular generic component: servo",
   "applications": null,
   "markdown_link": "README.md",
