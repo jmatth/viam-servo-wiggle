@@ -99,7 +99,7 @@ func (s *servoWiggleServo) Name() resource.Name {
 func (s *servoWiggleServo) DoCommand(ctx context.Context, cmd map[string]interface{}) (map[string]interface{}, error) {
 	delay := time.Duration(s.cfg.DelayMS) * time.Millisecond
 
-	for range 3 {
+	for range s.cfg.Repeat {
 		s.upstream.Move(ctx, 105, nil)
 		time.Sleep(delay)
 		s.upstream.Move(ctx, 180, nil)
